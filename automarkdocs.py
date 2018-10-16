@@ -57,41 +57,42 @@ def get_classes(item):
 
 def get_methods(item):
     item = get_module(item)
-    # print([k for k in item.__dict__.keys() if k.startswith("__")])
-    # print(inspect.getmembers(item))
     output = list()
     # class methods (without self)
-    for func in pydoc.inspect.getmembers(item, pydoc.inspect.getmembers):
+    try:  # fails wit hsqlalchemy (at least)
+        for func in pydoc.inspect.getmembers(item, pydoc.inspect.getmembers):
 
-        if func[0].startswith('_') or "built-in function" in str(func[1]):
-            continue
-        if isinstance(func[1], dict) or isinstance(func[1], int) or \
-                isinstance(func[1], list):
-            continue
+            if func[0].startswith('_') or "built-in function" in str(func[1]):
+                continue
+            if isinstance(func[1], dict) or isinstance(func[1], int) or \
+                    isinstance(func[1], list):
+                continue
 
-        try:
-            if func[1].__module__ == item.__module__:
-                output.append(
-                    function_header.format(func[0].replace('_', '\\_')))
-
-                # Get the signature
-                output.append('\n\n')
-                output.append('```\n')
-                output.append('def %s%s\n' % (
-                    func[0], str(pydoc.inspect.signature(func[1]))))
-                output.append('```\n\n')
-                output += get_comments(func[1])
-
-                # get the docstring
-                if pydoc.inspect.getdoc(func[1]):
-                    output.append('\n')
+            try:
+                if func[1].__module__ == item.__module__:
                     output.append(
-                        "\n\n".join(pydoc.inspect.getdoc(func[1]).split(
-                            "\n")))
+                        function_header.format(func[0].replace('_', '\\_')))
 
-                output.append('\n')
-        except:
-            pass
+                    # Get the signature
+                    output.append('\n\n')
+                    output.append('```\n')
+                    output.append('def %s%s\n' % (
+                        func[0], str(pydoc.inspect.signature(func[1]))))
+                    output.append('```\n\n')
+                    output += get_comments(func[1])
+
+                    # get the docstring
+                    if pydoc.inspect.getdoc(func[1]):
+                        output.append('\n')
+                        output.append(
+                            "\n\n".join(pydoc.inspect.getdoc(func[1]).split(
+                                "\n")))
+
+                    output.append('\n')
+            except:
+                pass
+    except:
+        pass
     return output
 
 
@@ -195,9 +196,10 @@ def generate_pydocmd(module, docs_path="/docs"):
 
 def generate_module_tree(item):
     item = get_module(item)
-    path = list(item.__path__)[0]
+
     submodules = []
     try:
+        path = list(item.__path__)[0]
         submodules = [item.__name__ + "." + o for o in os.listdir(path) if
                       os.path.isdir(
                           os.path.join(path, o)) and not o.startswith("_")]
@@ -207,10 +209,9 @@ def generate_module_tree(item):
                  o.endswith(".py") and not o.startswith("_")]
     except:
         files = []
-    files = files or []
     modules = {}
     for m in files:
-        modules[m] = ""  # deep_docs(m)
+        modules[m] = ""
     for m in submodules:
         modules[m] = generate_module_tree(m)
     return modules
@@ -238,7 +239,6 @@ def create_doc_folder(module, docs_path="docs"):
             # else:
             print("generating docs for", k)
             path = os.path.join(path, k + ".md")
-            print(path)
             with open(path, "w") as f:
 
                 doc_str = add_spaces(deep_docs(k))

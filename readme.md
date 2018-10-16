@@ -18,3 +18,7 @@ files are imported and objects inspected, no source code parsing is done
 # TODO
 
 package and doc how to use args
+
+maintain order in docs from which things are declared in files
+
+auto create table of contents at page starts
