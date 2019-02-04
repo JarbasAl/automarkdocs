@@ -4,6 +4,7 @@
 import inspect
 import pydoc
 import os, sys
+from os.path import dirname, join
 from pprint import pprint
 from time import strftime
 
@@ -163,10 +164,13 @@ def generate_pydocmd(module, docs_path="/docs"):
     module = get_module(module)
     pydocmd_str = "site_name: " + module.__name__
     pydocmd_str += "\ngenerate:"
-    pydocmd_str += "\ngens_dir: ../_build/pydocmd"
-    pydocmd_str += "\nsite_dir: ../_build/site"
+    path = join(dirname(docs_path), "_build/pydocmd")
+    pydocmd_str += "\ngens_dir: " + path
+    path = join(dirname(docs_path), "_build/site")
+    pydocmd_str += "\nsite_dir: " + path
     pydocmd_str += "\npages:"
-    pydocmd_str += "\n- Home: index.md << ../readme.md"
+    path = join(dirname(docs_path), "readme.md")
+    pydocmd_str += "\n- Home: index.md << " + path
 
     tree = generate_module_tree(module)
 
@@ -176,17 +180,16 @@ def generate_pydocmd(module, docs_path="/docs"):
             n = len(k.split(".")) - 2
 
             d = bucket[k]
-            path = os.path.join(docs_path, k.replace(".", "/"))
+            path = join(docs_path, k.replace(".", "/"))
             if isinstance(d, dict):
                 pydocmd_str += "\n" + n * "  " + "- " + k.split(".")[-1] + ":"
                 path = "\n" + (n + 1) * "  " + "- " + k.split(".")[-1] + ": " \
-                       + k + ".md" + " << ../" + os.path.join(path,
-                                                              k + ".md")
+                       + k + ".md" + " << " + join(path, k + ".md")
                 pydocmd_str += path
                 link_docs(d)
             else:
                 path = "\n" + n * "  " + "- " + k.split(".")[-1] + ": " + k \
-                       + ".md" + " << ../" + os.path.join(path, k + ".md")
+                       + ".md" + " << " + join(path, k + ".md")
                 pydocmd_str += path
 
     link_docs(tree)
@@ -225,7 +228,7 @@ def create_doc_folder(module, docs_path="docs"):
     if not os.path.exists(base_path):
         os.makedirs(base_path)
     print("making directories", base_path)
-
+    print("docs dir:", docs_path)
     def make_dirs(bucket):
         for k in bucket:
             d = bucket[k]
@@ -269,7 +272,7 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
 
-    docs_path = args.docfile or "docs"
+    docs_path = args.docfile or "../docs"
     module = args.module or os.path.dirname(__file__).split("/")[-1]
 
     create_doc_folder(module, docs_path)
@@ -277,6 +280,6 @@ if __name__ == '__main__':
     pydocmd = generate_pydocmd(module, docs_path)
 
     item = get_module(module)
-    path = os.path.join(list(item.__path__)[0], "pydocmd.yml")
+    path = os.path.join(docs_path, "pydocmd.yml")
     with open(path, "w") as f:
         f.write(pydocmd)

@@ -15,12 +15,17 @@ samples docs for [ai_demos](https://jarbasal.github.io/ai_demos/)
 
 # usage
 
-    pip install pydoc-mardown
+    pip install pydoc-markdown
+    
+    git clone https://github.com/JarbasAl/automarkdocs
+    cp autmarkdocs/automarkdocs.py /your/project/automarkdocs.py
     
     cd /your/project
-    git clone autmarkdocs 
-    python autmarkdocs/automarkdocs.py
-    pydocmd  build/serve/gh-deploy
+    python ./automarkdocs.py
+    
+    pydocmd build
+    pydocmd serve
+    pydocmd gh-deploy
     
 # TODO
 
