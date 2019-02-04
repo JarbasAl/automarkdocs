@@ -68,6 +68,10 @@ def get_methods(item):
             if isinstance(func[1], dict) or isinstance(func[1], int) or \
                     isinstance(func[1], list):
                 continue
+            # skip non-overrided methods
+            if "function" in str(func[1]) and item.__name__ \
+                    not in str(func[1]):
+                continue
 
             try:
                 if func[1].__module__ == item.__module__:
